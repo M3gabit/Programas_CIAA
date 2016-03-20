@@ -115,6 +115,7 @@ TASK(PeriodicTask)
 	num4=x4+48;
 
 	char dato[] = {num1,num2,num3,num4};
+	//Esto funciona
    
    // char message[] = "\n";
 	//ciaaPOSIX_write(fd_uart1, &hr_ciaaDac, sizeof(hr_ciaaDac));
