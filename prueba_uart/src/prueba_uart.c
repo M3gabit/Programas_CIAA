@@ -28,7 +28,9 @@ static uint8_t num4 = 0;
 
 
 static uint16_t hr_ciaaAdc;
-static uint16_t aux;
+static uint16_t hr_ciaaAdc2;
+static uint8_t aux_adc = 0;
+static uint8_t var_aux = 0;
 
 
 int main(void)
@@ -60,7 +62,7 @@ TASK(InitTask)
    ciaaPOSIX_ioctl(fd_uart1, ciaaPOSIX_IOCTL_SET_BAUDRATE, (void *)ciaaBAUDRATE_115200);
    ciaaPOSIX_ioctl(fd_uart1, ciaaPOSIX_IOCTL_SET_FIFO_TRIGGER_LEVEL, (void *)ciaaFIFO_TRIGGER_LEVEL3);
 
-   // open ADC 
+   // open ADC ch3
    fd_adc = ciaaPOSIX_open("/dev/serial/aio/in/0", ciaaPOSIX_O_RDONLY);
    ciaaPOSIX_ioctl(fd_adc, ciaaPOSIX_IOCTL_SET_SAMPLE_RATE, 100000);
    ciaaPOSIX_ioctl(fd_adc, ciaaPOSIX_IOCTL_SET_CHANNEL, ciaaCHANNEL_3);
@@ -150,8 +152,7 @@ TASK(SerialEchoTask)
 TASK(PeriodicTask)
 {
 	uint8_t outputs = 0;
-	aux=hr_ciaaAdc;
-
+	
 
 	x1 = (hr_ciaaAdc/1000);
 	num1 = x1+48;
@@ -165,16 +166,46 @@ TASK(PeriodicTask)
 	x4=(hr_ciaaAdc-x1*1000-x2*100-x3*10);
 	num4=x4+48;
 
-	char dato[] = {num1,num2,num3,num4};
+	char dato[] = {'C',num1,num2,num3,num4};
 	//Esto funciona
+
+	x1 = (hr_ciaaAdc2/1000);
+	num1 = x1+48;
+
+	x2=((hr_ciaaAdc2-x1*1000)/100);
+	num2=x2+48;
+
+	x3=((hr_ciaaAdc2-x1*1000-x2*100)/10);
+	num3=x3+48;
+
+	x4=(hr_ciaaAdc2-x1*1000-x2*100-x3*10);
+	num4=x4+48;
+
+	char dato2[] = {'B',num1,num2,num3,num4};
+
    
    // char message[] = "\n";
 	//ciaaPOSIX_write(fd_uart1, &hr_ciaaAdc, sizeof(hr_ciaaAdc));
-	ciaaPOSIX_write(fd_uart1, dato, ciaaPOSIX_strlen(dato));
+
+	if (var_aux == 0)
+	{
+		ciaaPOSIX_write(fd_uart1, dato, ciaaPOSIX_strlen(dato));
+		var_aux = 1;
+	}
+	else
+	{
+		ciaaPOSIX_write(fd_uart1, dato2, ciaaPOSIX_strlen(dato2));
+		var_aux = 0;
+	}
+
+
+	
 
 	ciaaPOSIX_read(fd_out, &outputs, 1);
 	outputs ^= 0x04;
 	ciaaPOSIX_write(fd_out, &outputs, 1);
+
+	
 
 	TerminateTask();
 }
@@ -183,7 +214,23 @@ TASK(PeriodicTask)
 TASK(Analogic)
 {
    /* Read ADC. */
-   ciaaPOSIX_read(fd_adc, &hr_ciaaAdc, sizeof(hr_ciaaAdc));
+	if (aux_adc == 1)
+	{
+		ciaaPOSIX_read(fd_adc, &hr_ciaaAdc, sizeof(hr_ciaaAdc));//CH3
+		ciaaPOSIX_ioctl(fd_adc, ciaaPOSIX_IOCTL_SET_CHANNEL, ciaaCHANNEL_2);
+    	
+    	aux_adc = 0;
+	}
+	else
+	{
+		ciaaPOSIX_read(fd_adc, &hr_ciaaAdc2, sizeof(hr_ciaaAdc2));//CH2
+		ciaaPOSIX_ioctl(fd_adc, ciaaPOSIX_IOCTL_SET_CHANNEL, ciaaCHANNEL_3);
+		
+		aux_adc = 1;
+	}
+
+
+
 
    /* Signal gain. */
    hr_ciaaAdc >>= 0;
