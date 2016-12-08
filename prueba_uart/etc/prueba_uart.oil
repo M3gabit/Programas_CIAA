@@ -65,12 +65,32 @@ TASK InitTask {
     RESOURCE = POSIXR;
 }
 
-TASK Analogic {
+TASK AnalogicUno {
     PRIORITY = 1;
     ACTIVATION = 1;
     STACK = 512;
     TYPE = EXTENDED;
-    SCHEDULE = FULL;
+    SCHEDULE = NON;
+    RESOURCE = POSIXR;
+    EVENT = POSIXE;
+}
+
+TASK AnalogicDos {
+    PRIORITY = 1;
+    ACTIVATION = 1;
+    STACK = 512;
+    TYPE = EXTENDED;
+    SCHEDULE = NON;
+    RESOURCE = POSIXR;
+    EVENT = POSIXE;
+}
+
+TASK AnalogicTres {
+    PRIORITY = 1;
+    ACTIVATION = 1;
+    STACK = 512;
+    TYPE = EXTENDED;
+    SCHEDULE = NON;
     RESOURCE = POSIXR;
     EVENT = POSIXE;
 }
@@ -98,6 +118,44 @@ TASK PeriodicTask {
     }
 }
 
+TASK Leds {
+      PRIORITY = 2;
+      ACTIVATION = 1;
+      STACK = 512;
+      TYPE = EXTENDED;
+      SCHEDULE = NON;
+      RESOURCE = POSIXR;
+      EVENT = POSIXE;
+   }
+
+ALARM Handshake {
+      COUNTER = SoftwareCounter;
+      ACTION = ACTIVATETASK {
+         TASK = Leds;
+    }
+}
+
+ALARM AnalogicoUno {
+      COUNTER = SoftwareCounter;
+      ACTION = ACTIVATETASK {
+         TASK = AnalogicUno;
+    }
+}
+
+ALARM AnalogicoDos {
+      COUNTER = SoftwareCounter;
+      ACTION = ACTIVATETASK {
+         TASK = AnalogicDos;
+    }
+}
+
+ALARM AnalogicoTres {
+      COUNTER = SoftwareCounter;
+      ACTION = ACTIVATETASK {
+         TASK = AnalogicTres;
+    }
+}
+
 ALARM ActivatePeriodicTask {
     COUNTER = SoftwareCounter;
     ACTION = ACTIVATETASK {
@@ -106,7 +164,7 @@ ALARM ActivatePeriodicTask {
 }
 
 
-ALARM AnalogicAlarm {
+/*ALARM AnalogicAlarm {
     COUNTER = SoftwareCounter;
     ACTION = ACTIVATETASK {
         TASK = Analogic;
@@ -117,7 +175,7 @@ ALARM AnalogicAlarm {
        CYCLETIME = 1;
     }
 }
-
+*/
 ISR ADC0_IRQHandler {
     INTERRUPT = ADC0;
     CATEGORY = 2;
