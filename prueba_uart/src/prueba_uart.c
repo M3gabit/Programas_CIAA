@@ -142,115 +142,112 @@ TASK(SerialEchoTask)
                alarm1=1;
            }
 
-      		if(ciaaPOSIX_strcmp(buf,analog1_off) == 0)
-      		{
-                // Si recibe analog1_off, cancela la alarma y apaga el led correspondiente
-	         	alarm1=0;
-	         	CancelAlarm(AnalogicoUno);
-	         	ciaaPOSIX_read(fd_out, &outputs, 2);
-				outputs &= 0xfff7;//Apago el led 1
-				ciaaPOSIX_write(fd_out, &outputs, 2);
-      		}
+           if(ciaaPOSIX_strcmp(buf,analog1_off) == 0)
+           {
+               // Si recibe analog1_off, cancela la alarma y apaga el led correspondiente
+               alarm1=0;
+               CancelAlarm(AnalogicoUno);
+               ciaaPOSIX_read(fd_out, &outputs, 2);
+               outputs &= 0xfff7;//Apago el led 1
+               ciaaPOSIX_write(fd_out, &outputs, 2);
+           }
 
-      		if(ciaaPOSIX_strcmp(buf,analog2_on) == 0)
-      		{
-      			// ret = ciaaPOSIX_read(fd_uart1, buf2, 20);
-  				// var = ((buf2[0]-48)*1000) + ((buf2[1]-48)*100) + (buf2[2]-48)*10 + buf2[3]-48;
-      			SetRelAlarm(AnalogicoDos, 100, 100);
-      			alarm2=1;
-      		}
+           if(ciaaPOSIX_strcmp(buf,analog2_on) == 0)
+           {
+               // ret = ciaaPOSIX_read(fd_uart1, buf2, 20);
+               // var = ((buf2[0]-48)*1000) + ((buf2[1]-48)*100) + (buf2[2]-48)*10 + buf2[3]-48;
+               SetRelAlarm(AnalogicoDos, 100, 100);
+               alarm2=1;
+           }
 
-      		if(ciaaPOSIX_strcmp(buf,analog2_off) == 0)
-      		{
-         		alarm2=0;
-         		CancelAlarm(AnalogicoDos);
-         		ciaaPOSIX_read(fd_out, &outputs, 2);
-				outputs &= 0xfffb;//Apago el led 2
-				ciaaPOSIX_write(fd_out, &outputs, 2);
-      		}
+           if(ciaaPOSIX_strcmp(buf,analog2_off) == 0)
+           {
+               alarm2=0;
+               CancelAlarm(AnalogicoDos);
+               ciaaPOSIX_read(fd_out, &outputs, 2);
+               outputs &= 0xfffb;//Apago el led 2
+               ciaaPOSIX_write(fd_out, &outputs, 2);
+           }
 
-      		if(ciaaPOSIX_strcmp(buf,analog3_on) == 0)
-      		{
-      			// ret = ciaaPOSIX_read(fd_uart1, buf2, 20);
-  				// var = ((buf2[0]-48)*1000) + ((buf2[1]-48)*100) + (buf2[2]-48)*10 + buf2[3]-48;
-      			SetRelAlarm(AnalogicoTres, 100, 100);
-      			alarm3=1;
-      		}
+           if(ciaaPOSIX_strcmp(buf,analog3_on) == 0)
+           {
+               // ret = ciaaPOSIX_read(fd_uart1, buf2, 20);
+               // var = ((buf2[0]-48)*1000) + ((buf2[1]-48)*100) + (buf2[2]-48)*10 + buf2[3]-48;
+               SetRelAlarm(AnalogicoTres, 100, 100);
+               alarm3=1;
+           }
 
-      		if(ciaaPOSIX_strcmp(buf,analog3_off) == 0)
-      		{
-         		alarm3=0;
-         		CancelAlarm(AnalogicoTres);
-         		ciaaPOSIX_read(fd_out, &outputs, 2);
-				outputs &= 0xfffd;//Apago el led 3
-				ciaaPOSIX_write(fd_out, &outputs, 2);
-      		}
+           if(ciaaPOSIX_strcmp(buf,analog3_off) == 0)
+           {
+               alarm3=0;
+               CancelAlarm(AnalogicoTres);
+               ciaaPOSIX_read(fd_out, &outputs, 2);
+               outputs &= 0xfffd;//Apago el led 3
+               ciaaPOSIX_write(fd_out, &outputs, 2);
+           }
 
-      		if (ciaaPOSIX_strcmp(buf,desconec) == 0)
-      		{
-                // Si recibe desconectar, cancela todas la alarmas y apaga todos los leds
-      			habilitar =0;
-      			if(alarm1==1)
-      			{
-	      			CancelAlarm(AnalogicoUno);
-	      			alarm1=0;
-      			}
+           if (ciaaPOSIX_strcmp(buf,desconec) == 0)
+           {
+               // Si recibe desconectar, cancela todas la alarmas y apaga todos los leds
+               habilitar =0;
+               if(alarm1==1)
+               {
+                   CancelAlarm(AnalogicoUno);
+                   alarm1=0;
+               }
 
-      			if(alarm2==1)
-      			{
-	      			CancelAlarm(AnalogicoDos);
-	      			alarm2=0;
-      			}
+               if(alarm2==1)
+               {
+                   CancelAlarm(AnalogicoDos);
+                   alarm2=0;
+               }
 
-      			if(alarm3==1)
-      			{
-	      			CancelAlarm(AnalogicoTres);
-	      			alarm3=0;
-      			}
-      			ciaaPOSIX_read(fd_out, &outputs, 2);
-				outputs &= 0xffdf;//Apago el led verde
-				ciaaPOSIX_write(fd_out, &outputs, 2);
-      			ciaaPOSIX_read(fd_out, &outputs, 2);
-				outputs &= 0xfff7;//Apago el led 1
-				ciaaPOSIX_write(fd_out, &outputs, 2);
-      			ciaaPOSIX_read(fd_out, &outputs, 2);
-				outputs &= 0xfffb;//Apago el led 2
-				ciaaPOSIX_write(fd_out, &outputs, 2);
-      			ciaaPOSIX_read(fd_out, &outputs, 2);
-				outputs &= 0xfffd;//Apago el led 3
-				ciaaPOSIX_write(fd_out, &outputs, 2);
-      		}
-
-   		}
-    }
+               if(alarm3==1)
+               {
+                   CancelAlarm(AnalogicoTres);
+                   alarm3=0;
+               }
+               ciaaPOSIX_read(fd_out, &outputs, 2);
+               outputs &= 0xffdf;//Apago el led verde
+               ciaaPOSIX_write(fd_out, &outputs, 2);
+               ciaaPOSIX_read(fd_out, &outputs, 2);
+               outputs &= 0xfff7;//Apago el led 1
+               ciaaPOSIX_write(fd_out, &outputs, 2);
+               ciaaPOSIX_read(fd_out, &outputs, 2);
+               outputs &= 0xfffb;//Apago el led 2
+               ciaaPOSIX_write(fd_out, &outputs, 2);
+               ciaaPOSIX_read(fd_out, &outputs, 2);
+               outputs &= 0xfffd;//Apago el led 3
+               ciaaPOSIX_write(fd_out, &outputs, 2);
+           }
+       }
+   }
 }
 
 TASK(Leds) //Tarea de Handshake
 {
-	static int counter = 0;
-	uint32_t outputs;
-
-	ciaaPOSIX_read(fd_out, &outputs, 2);
-   	outputs ^= 0x0400;
-   	ciaaPOSIX_write(fd_out, &outputs, 2);
-
-	if (counter ++ >= 20)
-	{
+    static int counter = 0;
+    uint32_t outputs;
+    ciaaPOSIX_read(fd_out, &outputs, 2);
+    outputs ^= 0x0400;
+    ciaaPOSIX_write(fd_out, &outputs, 2);
+    if (counter ++ >= 20)
+    {
         // Hace parpadear uno de los leds 20 veces, cancela la
         // alarma y pone el flag habilitar en 1
-		CancelAlarm(Handshake);
-		counter=0;
-		habilitar= 1;
-		ciaaPOSIX_read(fd_out, &outputs, 1);
+        CancelAlarm(Handshake);
+        counter=0;
+        habilitar= 1;
+        ciaaPOSIX_read(fd_out, &outputs, 1);
         outputs |= 0x02;
         ciaaPOSIX_write(fd_out, &outputs, 1);
-	}
-   	TerminateTask();
+    }
+    TerminateTask();
 }
 
 TASK(PeriodicTask)
 {
-	//No se activa nunca
+    //No se activa nunca
 }
 
 TASK(AnalogicUno)
@@ -281,47 +278,41 @@ TASK(AnalogicUno)
     ciaaPOSIX_read(fd_out, &outputs, 2);
     outputs ^= 0x1000;
     ciaaPOSIX_write(fd_out, &outputs, 2);
-
     ciaaPOSIX_ioctl(fd_adc, ciaaPOSIX_IOCTL_SET_CHANNEL, ciaaCHANNEL_1);
     TerminateTask();
 }
 
 TASK(AnalogicDos)
 {
-	uint32_t outputs;
-	uint16_t hr_ciaaAdc2;
+    uint32_t outputs;
+    uint16_t hr_ciaaAdc2;
+    ciaaPOSIX_read(fd_adc, &hr_ciaaAdc2, sizeof(hr_ciaaAdc2));//CH2
 
-	ciaaPOSIX_read(fd_adc, &hr_ciaaAdc2, sizeof(hr_ciaaAdc2));//CH2
+    y1 = (hr_ciaaAdc2/1000);
+    nu1 = y1+48;
 
-	y1 = (hr_ciaaAdc2/1000);
-	nu1 = y1+48;
+    y2=((hr_ciaaAdc2-y1*1000)/100);
+    nu2=y2+48;
 
-	y2=((hr_ciaaAdc2-y1*1000)/100);
-	nu2=y2+48;
+    y3=((hr_ciaaAdc2-y1*1000-y2*100)/10);
+    nu3=y3+48;
 
-	y3=((hr_ciaaAdc2-y1*1000-y2*100)/10);
-	nu3=y3+48;
+    y4=(hr_ciaaAdc2-y1*1000-y2*100-y3*10);
+    nu4=y4+48;
 
-	y4=(hr_ciaaAdc2-y1*1000-y2*100-y3*10);
-	nu4=y4+48;
-
-	char dato2[] = {'B',nu1,nu2,nu3,nu4,'\r\n'};
-
-	ciaaPOSIX_write(fd_uart1, dato2, ciaaPOSIX_strlen(dato2));
-
-	ciaaPOSIX_read(fd_out, &outputs, 2);
-	outputs ^= 0x2000;
-	ciaaPOSIX_write(fd_out, &outputs, 2);
-
-	ciaaPOSIX_ioctl(fd_adc, ciaaPOSIX_IOCTL_SET_CHANNEL, ciaaCHANNEL_2);
-	TerminateTask();
+    char dato2[] = {'B',nu1,nu2,nu3,nu4,'\r\n'};
+    ciaaPOSIX_write(fd_uart1, dato2, ciaaPOSIX_strlen(dato2));
+    ciaaPOSIX_read(fd_out, &outputs, 2);
+    outputs ^= 0x2000;
+    ciaaPOSIX_write(fd_out, &outputs, 2);
+    ciaaPOSIX_ioctl(fd_adc, ciaaPOSIX_IOCTL_SET_CHANNEL, ciaaCHANNEL_2);
+    TerminateTask();
 }
 
 TASK(AnalogicTres)
 {
     uint16_t hr_ciaaAdc3;
     uint32_t outputs;
-
     ciaaPOSIX_read(fd_adc, &hr_ciaaAdc3, sizeof(hr_ciaaAdc3));//CH3
 
     x1 = (hr_ciaaAdc3/1000);
@@ -337,13 +328,10 @@ TASK(AnalogicTres)
     num4=x4+48;
 
     char dato3[] = {'C',num1,num2,num3,num4,'\r\n'};
-
     ciaaPOSIX_write(fd_uart1, dato3, ciaaPOSIX_strlen(dato3));
-
     ciaaPOSIX_read(fd_out, &outputs, 2);
     outputs ^= 0x4000;
     ciaaPOSIX_write(fd_out, &outputs, 2);
-
     ciaaPOSIX_ioctl(fd_adc, ciaaPOSIX_IOCTL_SET_CHANNEL, ciaaCHANNEL_3);
     TerminateTask();
 }
