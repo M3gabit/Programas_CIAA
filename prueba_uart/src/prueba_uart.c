@@ -96,7 +96,7 @@ TASK(SerialEchoTask)
     char buf2[20];
     char iniciar[] = "iniciar\0";
     char handshake[] = "123ok\r\n";
-	char desconec[] = "desconectar\0";
+    char desconec[] = "desconectar\0";
 	char analogico_on[] = "an_on\0";
 	char analogico_off[] = "an_off\0";
 	char analog1_on[] = "ch1_on\0";
