@@ -6,13 +6,9 @@
 #include "adc_dac.h"
 
 static int32_t fd_in;
-
 static int32_t fd_adc;
-
 static int32_t fd_out;
-
 static int32_t fd_uart1;
-
 static uint32_t Periodic_Task_Counter;
 
 static int habilitar = 0;
@@ -94,55 +90,62 @@ TASK(InitTask)
 
 TASK(SerialEchoTask)
 {
-  char buf[20];   /* buffer for uart operation              */
-  char buf2[20];
-  uint32_t outputs;  /* to store outputs status                */
-  int32_t ret;      /* return value variable for posix calls  */
-  char iniciar[] = "iniciar\0";
-  char handshake[] = "123ok\r\n";
+    uint32_t outputs;  /* to store outputs status                */
+    int32_t ret;      /* return value variable for posix calls  */
+    char buf[20];   /* buffer for uart operation              */
+    char buf2[20];
+    char iniciar[] = "iniciar\0";
+    char handshake[] = "123ok\r\n";
 	char desconec[] = "desconectar\0";
-
 	char analogico_on[] = "an_on\0";
 	char analogico_off[] = "an_off\0";
-
 	char analog1_on[] = "ch1_on\0";
 	char analog1_off[] = "ch1_off\0";
-
 	char analog2_on[] = "ch2_on\0";
 	char analog2_off[] = "ch2_off\0";
-
 	char analog3_on[] = "ch3_on\0";
 	char analog3_off[] = "ch3_off\0";
 
 	static int alarm1 = 0;
 	static int alarm2 = 0;
 	static int alarm3 = 0;
-	static int var = 0;
+    static int var = 0;
 
    while(1)
    {
+        // Se queda en esta instruccion hasta que recibe algo por la uart
    		ret = ciaaPOSIX_read(fd_uart1, buf, 20);
-
+        // Compara si lo que llego es igual al strin iniciar
    		if (ciaaPOSIX_strcmp(buf,iniciar) == 0)
    		{
+            // Envia por la uart la palabra handshake y activa la alarma Handshake
    			ciaaPOSIX_write(fd_uart1, handshake, ciaaPOSIX_strlen(handshake));
    			SetRelAlarm(Handshake, 100, 100);
-   			//PONE HABILITAR EN 1
-   		}
 
+   		}
+        // Despues del handshake se activa esto
    		if (habilitar == 1)
    		{
    			if(ciaaPOSIX_strcmp(buf,analog1_on) == 0)
       		{
+                // Si por la uart recibe analog1_on, entra a este if y se queda
+                // esperando en la instruccion que sigue
+                // Despues de analog1_on, le mando un tiempo en ms (por ejemplo 325)
+                // que esta formado por 4 caracteres ("0" "3" "2" "5") y a eso lo
+                // almaceno en buf2
       			ret = ciaaPOSIX_read(fd_uart1, buf2, 20);
-
-  				  var = ((buf2[0]-48)*1000) + ((buf2[1]-48)*100) + (buf2[2]-48)*10 + buf2[3]-48;
+                // Esta cuenta es lo primero que se me ocurrio para convertir los 4
+                // caracteres que estan en ascii a valor numerico en base 10
+  				var = ((buf2[0]-48)*1000) + ((buf2[1]-48)*100) + (buf2[2]-48)*10 + buf2[3]-48;
+                // Teniendo el valor numerico, activo la alarma del ADC y le paso como parametro
+                // el valor en ms que obtuve (var)
          		SetRelAlarm(AnalogicoUno, var,var);
          		alarm1=1;
       		}
 
       		if(ciaaPOSIX_strcmp(buf,analog1_off) == 0)
       		{
+                // Si recibe analog1_off, cancela la alarma y apaga el led correspondiente
 	         	alarm1=0;
 	         	CancelAlarm(AnalogicoUno);
 	         	ciaaPOSIX_read(fd_out, &outputs, 2);
@@ -153,7 +156,6 @@ TASK(SerialEchoTask)
       		if(ciaaPOSIX_strcmp(buf,analog2_on) == 0)
       		{
       			// ret = ciaaPOSIX_read(fd_uart1, buf2, 20);
-
   				// var = ((buf2[0]-48)*1000) + ((buf2[1]-48)*100) + (buf2[2]-48)*10 + buf2[3]-48;
       			SetRelAlarm(AnalogicoDos, 100, 100);
       			alarm2=1;
@@ -170,9 +172,7 @@ TASK(SerialEchoTask)
 
       		if(ciaaPOSIX_strcmp(buf,analog3_on) == 0)
       		{
-
       			// ret = ciaaPOSIX_read(fd_uart1, buf2, 20);
-
   				// var = ((buf2[0]-48)*1000) + ((buf2[1]-48)*100) + (buf2[2]-48)*10 + buf2[3]-48;
       			SetRelAlarm(AnalogicoTres, 100, 100);
       			alarm3=1;
@@ -183,12 +183,13 @@ TASK(SerialEchoTask)
          		alarm3=0;
          		CancelAlarm(AnalogicoTres);
          		ciaaPOSIX_read(fd_out, &outputs, 2);
-				    outputs &= 0xfffd;//Apago el led 3
-				    ciaaPOSIX_write(fd_out, &outputs, 2);
+				outputs &= 0xfffd;//Apago el led 3
+				ciaaPOSIX_write(fd_out, &outputs, 2);
       		}
 
       		if (ciaaPOSIX_strcmp(buf,desconec) == 0)
       		{
+                // Si recibe desconectar, cancela todas la alarmas y apaga todos los leds
       			habilitar =0;
       			if(alarm1==1)
       			{
@@ -208,24 +209,24 @@ TASK(SerialEchoTask)
 	      			alarm3=0;
       			}
       			ciaaPOSIX_read(fd_out, &outputs, 2);
-				    outputs &= 0xffdf;//Apago el led verde
-				    ciaaPOSIX_write(fd_out, &outputs, 2);
+				outputs &= 0xffdf;//Apago el led verde
+				ciaaPOSIX_write(fd_out, &outputs, 2);
       			ciaaPOSIX_read(fd_out, &outputs, 2);
-				    outputs &= 0xfff7;//Apago el led 1
-				    ciaaPOSIX_write(fd_out, &outputs, 2);
+				outputs &= 0xfff7;//Apago el led 1
+				ciaaPOSIX_write(fd_out, &outputs, 2);
       			ciaaPOSIX_read(fd_out, &outputs, 2);
-				    outputs &= 0xfffb;//Apago el led 2
-				    ciaaPOSIX_write(fd_out, &outputs, 2);
+				outputs &= 0xfffb;//Apago el led 2
+				ciaaPOSIX_write(fd_out, &outputs, 2);
       			ciaaPOSIX_read(fd_out, &outputs, 2);
-				    outputs &= 0xfffd;//Apago el led 3
-				    ciaaPOSIX_write(fd_out, &outputs, 2);
+				outputs &= 0xfffd;//Apago el led 3
+				ciaaPOSIX_write(fd_out, &outputs, 2);
       		}
 
    		}
     }
 }
 
-TASK(Leds) //Handshake
+TASK(Leds) //Tarea de Handshake
 {
 	static int counter = 0;
 	uint32_t outputs;
@@ -236,6 +237,8 @@ TASK(Leds) //Handshake
 
 	if (counter ++ >= 20)
 	{
+        // Hace parpadear uno de los leds 20 veces, cancela la
+        // alarma y pone el flag habilitar en 1
 		CancelAlarm(Handshake);
 		counter=0;
 		habilitar= 1;
@@ -253,33 +256,35 @@ TASK(PeriodicTask)
 
 TASK(AnalogicUno)
 {
-  uint32_t outputs = 0;
-  uint16_t hr_ciaaAdc;
+    uint32_t outputs = 0;
+    uint16_t hr_ciaaAdc;
+    // Leo el ADC
+    ciaaPOSIX_read(fd_adc, &hr_ciaaAdc, sizeof(hr_ciaaAdc));
+    //num1, num2, num3 y num4 contienen el valor del ADC (0 a 1023) pasado a caracteres
+    // (valor ascii), por ejemplo "1" "0" "2" "3"
+    x1 = (hr_ciaaAdc/1000);
+    num1 = x1+48;
 
-	ciaaPOSIX_read(fd_adc, &hr_ciaaAdc, sizeof(hr_ciaaAdc));
+    x2=((hr_ciaaAdc-x1*1000)/100);
+    num2=x2+48;
 
-	x1 = (hr_ciaaAdc/1000);
-	num1 = x1+48;
+    x3=((hr_ciaaAdc-x1*1000-x2*100)/10);
+    num3=x3+48;
 
-	x2=((hr_ciaaAdc-x1*1000)/100);
-	num2=x2+48;
+    x4=(hr_ciaaAdc-x1*1000-x2*100-x3*10);
+    num4=x4+48;
 
-	x3=((hr_ciaaAdc-x1*1000-x2*100)/10);
-	num3=x3+48;
+    char dato[] = {'A',num1,num2,num3,num4,'\r\n'};
+    // Mando por la uart "A" para indicar que es del canal 1 del ADC mas el numero
+    // en forma de caracteres
+    ciaaPOSIX_write(fd_uart1, dato, ciaaPOSIX_strlen(dato));
+    // Parpadea un led cada vez que muestrea y envia
+    ciaaPOSIX_read(fd_out, &outputs, 2);
+    outputs ^= 0x1000;
+    ciaaPOSIX_write(fd_out, &outputs, 2);
 
-	x4=(hr_ciaaAdc-x1*1000-x2*100-x3*10);
-	num4=x4+48;
-
-	char dato[] = {'A',num1,num2,num3,num4,'\r\n'};
-
-	ciaaPOSIX_write(fd_uart1, dato, ciaaPOSIX_strlen(dato));
-
-	ciaaPOSIX_read(fd_out, &outputs, 2);
-	outputs ^= 0x1000;
-	ciaaPOSIX_write(fd_out, &outputs, 2);
-
-	ciaaPOSIX_ioctl(fd_adc, ciaaPOSIX_IOCTL_SET_CHANNEL, ciaaCHANNEL_1);
-   	TerminateTask();
+    ciaaPOSIX_ioctl(fd_adc, ciaaPOSIX_IOCTL_SET_CHANNEL, ciaaCHANNEL_1);
+    TerminateTask();
 }
 
 TASK(AnalogicDos)
@@ -315,32 +320,32 @@ TASK(AnalogicDos)
 
 TASK(AnalogicTres)
 {
-	uint16_t hr_ciaaAdc3;
-	uint32_t outputs;
+    uint16_t hr_ciaaAdc3;
+    uint32_t outputs;
 
-	ciaaPOSIX_read(fd_adc, &hr_ciaaAdc3, sizeof(hr_ciaaAdc3));//CH3
+    ciaaPOSIX_read(fd_adc, &hr_ciaaAdc3, sizeof(hr_ciaaAdc3));//CH3
 
-	x1 = (hr_ciaaAdc3/1000);
-	num1 = x1+48;
+    x1 = (hr_ciaaAdc3/1000);
+    num1 = x1+48;
 
-	x2=((hr_ciaaAdc3-x1*1000)/100);
-	num2=x2+48;
+    x2=((hr_ciaaAdc3-x1*1000)/100);
+    num2=x2+48;
 
-	x3=((hr_ciaaAdc3-x1*1000-x2*100)/10);
-	num3=x3+48;
+    x3=((hr_ciaaAdc3-x1*1000-x2*100)/10);
+    num3=x3+48;
 
-	x4=(hr_ciaaAdc3-x1*1000-x2*100-x3*10);
-	num4=x4+48;
+    x4=(hr_ciaaAdc3-x1*1000-x2*100-x3*10);
+    num4=x4+48;
 
-	char dato3[] = {'C',num1,num2,num3,num4,'\r\n'};
+    char dato3[] = {'C',num1,num2,num3,num4,'\r\n'};
 
-	ciaaPOSIX_write(fd_uart1, dato3, ciaaPOSIX_strlen(dato3));
+    ciaaPOSIX_write(fd_uart1, dato3, ciaaPOSIX_strlen(dato3));
 
-	ciaaPOSIX_read(fd_out, &outputs, 2);
-	outputs ^= 0x4000;
-	ciaaPOSIX_write(fd_out, &outputs, 2);
+    ciaaPOSIX_read(fd_out, &outputs, 2);
+    outputs ^= 0x4000;
+    ciaaPOSIX_write(fd_out, &outputs, 2);
 
-  ciaaPOSIX_ioctl(fd_adc, ciaaPOSIX_IOCTL_SET_CHANNEL, ciaaCHANNEL_1);
+    ciaaPOSIX_ioctl(fd_adc, ciaaPOSIX_IOCTL_SET_CHANNEL, ciaaCHANNEL_3);
 
 	TerminateTask();
 }
