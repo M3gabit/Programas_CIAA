@@ -97,51 +97,50 @@ TASK(SerialEchoTask)
     char iniciar[] = "iniciar\0";
     char handshake[] = "123ok\r\n";
     char desconec[] = "desconectar\0";
-	char analogico_on[] = "an_on\0";
-	char analogico_off[] = "an_off\0";
-	char analog1_on[] = "ch1_on\0";
-	char analog1_off[] = "ch1_off\0";
-	char analog2_on[] = "ch2_on\0";
-	char analog2_off[] = "ch2_off\0";
-	char analog3_on[] = "ch3_on\0";
-	char analog3_off[] = "ch3_off\0";
+    char analogico_on[] = "an_on\0";
+    char analogico_off[] = "an_off\0";
+    char analog1_on[] = "ch1_on\0";
+    char analog1_off[] = "ch1_off\0";
+    char analog2_on[] = "ch2_on\0";
+    char analog2_off[] = "ch2_off\0";
+    char analog3_on[] = "ch3_on\0";
+    char analog3_off[] = "ch3_off\0";
 
-	static int alarm1 = 0;
-	static int alarm2 = 0;
-	static int alarm3 = 0;
+    static int alarm1 = 0;
+    static int alarm2 = 0;
+    static int alarm3 = 0;
     static int var = 0;
 
    while(1)
    {
-        // Se queda en esta instruccion hasta que recibe algo por la uart
-   		ret = ciaaPOSIX_read(fd_uart1, buf, 20);
-        // Compara si lo que llego es igual al strin iniciar
-   		if (ciaaPOSIX_strcmp(buf,iniciar) == 0)
-   		{
-            // Envia por la uart la palabra handshake y activa la alarma Handshake
-   			ciaaPOSIX_write(fd_uart1, handshake, ciaaPOSIX_strlen(handshake));
-   			SetRelAlarm(Handshake, 100, 100);
-
-   		}
-        // Despues del handshake se activa esto
-   		if (habilitar == 1)
-   		{
-   			if(ciaaPOSIX_strcmp(buf,analog1_on) == 0)
-      		{
-                // Si por la uart recibe analog1_on, entra a este if y se queda
-                // esperando en la instruccion que sigue
-                // Despues de analog1_on, le mando un tiempo en ms (por ejemplo 325)
-                // que esta formado por 4 caracteres ("0" "3" "2" "5") y a eso lo
-                // almaceno en buf2
-      			ret = ciaaPOSIX_read(fd_uart1, buf2, 20);
-                // Esta cuenta es lo primero que se me ocurrio para convertir los 4
-                // caracteres que estan en ascii a valor numerico en base 10
-  				var = ((buf2[0]-48)*1000) + ((buf2[1]-48)*100) + (buf2[2]-48)*10 + buf2[3]-48;
-                // Teniendo el valor numerico, activo la alarma del ADC y le paso como parametro
-                // el valor en ms que obtuve (var)
-         		SetRelAlarm(AnalogicoUno, var,var);
-         		alarm1=1;
-      		}
+       // Se queda en esta instruccion hasta que recibe algo por la uart
+       ret = ciaaPOSIX_read(fd_uart1, buf, 20);
+       // Compara si lo que llego es igual al strin iniciar
+       if (ciaaPOSIX_strcmp(buf,iniciar) == 0)
+       {
+           // Envia por la uart la palabra handshake y activa la alarma Handshake
+           ciaaPOSIX_write(fd_uart1, handshake, ciaaPOSIX_strlen(handshake));
+           SetRelAlarm(Handshake, 100, 100);
+       }
+       // Despues del handshake se activa esto
+       if (habilitar == 1)
+       {
+           if(ciaaPOSIX_strcmp(buf,analog1_on) == 0)
+           {
+               // Si por la uart recibe analog1_on, entra a este if y se queda
+               // esperando en la instruccion que sigue
+               // Despues de analog1_on, le mando un tiempo en ms (por ejemplo 325)
+               // que esta formado por 4 caracteres ("0" "3" "2" "5") y a eso lo
+               // almaceno en buf2
+               ret = ciaaPOSIX_read(fd_uart1, buf2, 20);
+               // Esta cuenta es lo primero que se me ocurrio para convertir los 4
+               // caracteres que estan en ascii a valor numerico en base 10
+               var = ((buf2[0]-48)*1000) + ((buf2[1]-48)*100) + (buf2[2]-48)*10 + buf2[3]-48;
+               // Teniendo el valor numerico, activo la alarma del ADC y le paso como parametro
+               // el valor en ms que obtuve (var)
+               SetRelAlarm(AnalogicoUno, var,var);
+               alarm1=1;
+           }
 
       		if(ciaaPOSIX_strcmp(buf,analog1_off) == 0)
       		{
@@ -346,6 +345,5 @@ TASK(AnalogicTres)
     ciaaPOSIX_write(fd_out, &outputs, 2);
 
     ciaaPOSIX_ioctl(fd_adc, ciaaPOSIX_IOCTL_SET_CHANNEL, ciaaCHANNEL_3);
-
-	TerminateTask();
+    TerminateTask();
 }
